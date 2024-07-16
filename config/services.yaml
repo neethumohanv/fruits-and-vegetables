@@ -4,7 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-
+    test_data_file: '%kernel.project_dir%/config/test_data.json'
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -22,3 +22,27 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    # Register and configure the serializer with annotation support
+    serializer.normalizer.object:
+        class: Symfony\Component\Serializer\Normalizer\ObjectNormalizer
+        arguments:
+            $classMetadataFactory: '@serializer.mapping.class_metadata_factory'
+            $propertyAccessor: '@property_accessor'
+        tags:
+            - { name: serializer.normalizer }
+
+    serializer.mapping.class_metadata_factory:
+        class: Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory
+        arguments:
+            $loader: '@serializer.mapping.loader.annotation'
+
+    serializer.mapping.loader.annotation:
+        class: Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader
+        arguments:
+            $reader: '@annotation_reader'
+
+    annotation_reader:
+        class: Doctrine\Common\Annotations\AnnotationReader
+
+    property_accessor:
+        class: Symfony\Component\PropertyAccess\PropertyAccessor
